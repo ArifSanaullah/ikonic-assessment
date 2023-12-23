@@ -43,7 +43,7 @@ const register = async (req, res, next) => {
       }
     });
   } catch (error) {
-    res.status(500).send({ message: err.message, success: false });
+    res.status(500).send({ message: error.message, success: false });
   }
 };
 

@@ -2,10 +2,10 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { CreateRoomModal } from "@/components/CreateRoomModal";
 
 const Home = () => {
   const session = useSession();
+  console.log("🚀 ~ file: page.jsx:8 ~ Home ~ session:", session);
 
   if (!session || !session?.data?.user) {
     redirect("api/auth/signin");

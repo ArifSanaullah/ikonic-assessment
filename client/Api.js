@@ -4,7 +4,7 @@ const API_URL = process.env.API_URL || "http://localhost:3001";
 axios.defaults.baseURL = API_URL;
 
 class Api {
-  token = "Hello";
+  token = null;
 
   loadAccessToken() {
     if (!this.token) {
@@ -60,6 +60,57 @@ class Api {
 
     if (response) {
       this.saveAccessToken(response.user.token);
+      return response.user;
+    }
+    return undefined;
+  };
+
+  createUser = async (data) => {
+    const apiCall = axios({
+      method: "post",
+      url: "/user",
+      data,
+    });
+    const response = await this.executeApiCall(1, "createUser", false, apiCall);
+
+    if (response) {
+      return response.user;
+    }
+    return undefined;
+  };
+
+  getUserByEmail = async (email) => {
+    const apiCall = axios({
+      method: "get",
+      url: `/user/${email}`,
+    });
+    const response = await this.executeApiCall(
+      1,
+      "getUserByEmail",
+      false,
+      apiCall
+    );
+
+    if (response) {
+      return response.user;
+    }
+    return undefined;
+  };
+
+  getOrCreateUserByEmail = async (email) => {
+    const apiCall = axios({
+      method: "post",
+      url: `/user/get-or-create-user-by-email/${email}`,
+    });
+
+    const response = await this.executeApiCall(
+      1,
+      "getOrCreateUserByEmail",
+      false,
+      apiCall
+    );
+
+    if (response) {
       return response.user;
     }
     return undefined;

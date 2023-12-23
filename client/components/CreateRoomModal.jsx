@@ -1,19 +1,36 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import { useForm } from "react-hook-form";
+import { useCreateRoom } from "@/lib/hooks/rooms/useCreateRoom";
+import { useSession } from "next-auth/react";
 
 export const CreateRoomModal = () => {
-  const [showModal, setShowModal] = useState(false);
-
   const dialogRef = useRef(null);
 
-  useEffect(() => {
-    if (dialogRef.current?.open && !showModal) {
-      dialogRef.current?.close();
-    } else if (!dialogRef.current?.open && showModal) {
-      dialogRef.current?.showModal();
+  const methods = useForm();
+
+  const {
+    register,
+    formState: { errors },
+  } = methods;
+
+  const session = useSession();
+
+  const { mutate } = useCreateRoom();
+
+  const onSubmit = (data) => {
+    if (session?.data?.user) {
+      mutate(
+        { ...data, users: [] },
+        {
+          onSettled: (...args) => {
+            console.log(...args);
+          },
+        }
+      );
     }
-  }, [showModal]);
+  };
 
   return (
     <div>
@@ -26,73 +43,37 @@ export const CreateRoomModal = () => {
         <PlusIcon className="h-4 w-4" aria-hidden="true" />
         <span className="hidden sm:block whitespace-nowrap">Create Room</span>
       </button>
-      <dialog ref={dialogRef} onBlur={() => setShowModal(false)}>
-        <form>
-          <div className="space-y-12">
-            <div className="grid grid-cols-1 gap-x-8 gap-y-10 border-b border-gray-900/10 pb-12 md:grid-cols-3">
-              <div>
-                <h2 className="text-base font-semibold leading-7 text-gray-900">
-                  Profile
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-gray-600">
-                  This information will be displayed publicly so be careful what
-                  you share.
-                </p>
-              </div>
-
-              <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 md:col-span-2">
-                <div className="sm:col-span-4">
-                  <label
-                    htmlFor="website"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    Website
-                  </label>
-                  <div className="mt-2">
-                    <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                      <span className="flex select-none items-center pl-3 text-gray-500 sm:text-sm">
-                        http://
-                      </span>
-                      <input
-                        type="text"
-                        name="website"
-                        id="website"
-                        className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
-                        placeholder="www.example.com"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-span-full">
-                  <label
-                    htmlFor="about"
-                    className="block text-sm font-medium leading-6 text-gray-900"
-                  >
-                    About
-                  </label>
-                  <div className="mt-2">
-                    <textarea
-                      id="about"
-                      name="about"
-                      rows={3}
-                      className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      defaultValue={""}
-                    />
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-gray-600">
-                    Write a few sentences about yourself.
-                  </p>
-                </div>
-              </div>
+      <dialog ref={dialogRef} className="rounded-md">
+        <form
+          className="max-w-3xl min-w-[576px]"
+          onSubmit={methods.handleSubmit(onSubmit)}
+        >
+          <div className="p-4">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="name" className="text-gray-900 text-xs">
+                Room Name:
+              </label>
+              <input
+                type="text"
+                id="name"
+                className="border border-gray-200 rounded px-2 py-1 focus:border-indigo-500"
+                {...register("name", {
+                  required: { value: true, message: "Room name is required" },
+                })}
+              />
             </div>
+            {errors.name && (
+              <span className="text-red-500 text-xs">
+                {errors.name.message}
+              </span>
+            )}
           </div>
-
-          <div className="mt-6 flex items-center justify-end gap-x-6">
+          <div className="border-b" />
+          <div className="p-4 flex items-center justify-end gap-x-4">
             <button
               type="button"
               className="text-sm font-semibold leading-6 text-gray-900"
-              onClick={() => setShowModal(false)}
+              onClick={() => dialogRef?.current?.close()}
             >
               Cancel
             </button>

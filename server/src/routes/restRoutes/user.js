@@ -1,10 +1,14 @@
 const express = require("express");
-const { authenticate } = require("../../middlewares/auth");
+const {
+  getUserByEmail,
+  createUser,
+  getOrCreateUserByEmail,
+} = require("../../controlers/user");
 
 const router = express.Router();
 
-router.get("/profile", authenticate, (req, res) => {
-  res.json({ message: `Welcome ${req.user.email}` });
-});
+router.get("/:email", getUserByEmail);
+router.post("/", createUser);
+router.post("/get-or-create-user-by-email/:email", getOrCreateUserByEmail);
 
 module.exports = router;
