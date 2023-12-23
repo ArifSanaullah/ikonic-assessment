@@ -1,4 +1,5 @@
 const Message = require("../models/Message");
+const io = require("../routes/socketRoutes");
 
 // create a message
 const createMessage = async (req, res) => {
@@ -6,10 +7,20 @@ const createMessage = async (req, res) => {
     const { recepientId, senderId, text, roomId } = req.body;
 
     const msg = new Message({ recepientId, senderId, text, roomId });
-    const msgDoc = msg.save();
+    const msgDoc = (await msg.save()).populate({
+      path: "senderId",
+      select: "-password",
+    });
+
+    const msgObj = (await msgDoc).toObject();
+
+    io.emit("new message", {
+      message: msgObj,
+    });
 
     return res.status(200).json((await msgDoc).toObject());
   } catch (error) {
+    console.log("🚀 ~ file: message.js:20 ~ createMessage ~ error:", error);
     res.status(500).send(error);
   }
 };

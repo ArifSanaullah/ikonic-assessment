@@ -2,13 +2,14 @@ import "react-chat-elements/dist/main.css";
 
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { useFetchRoomMessages } from "@/lib/hooks/rooms/useFetchRoomMessages";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Input, MessageBox } from "react-chat-elements";
 import { useSession } from "next-auth/react";
 import { useLeaveRoom } from "@/lib/hooks/rooms/useLeaveRoom";
 import { setRoom } from "@/lib/roomSlice";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { useSendMessage } from "@/lib/hooks/message/useSendMessage";
+import { socket } from "@/lib/socket";
 
 export const Room = () => {
   const [msg, setMsg] = useState("");
@@ -19,36 +20,62 @@ export const Room = () => {
 
   const session = useSession();
 
-  const { data = [] } = useFetchRoomMessages(room?._id);
+  const { data = [], refetch } = useFetchRoomMessages(room?._id);
 
   const { mutate, isLoading } = useLeaveRoom();
 
-  const leaveRoom = () => {
-    if (msg.trim()) {
-      mutate(
-        { roomId: room._id, userId: session.data.user.id },
-        {
-          onSuccess: () => {
-            queryClient.invalidateQueries(["fetchJoinedRooms"]);
-            queryClient.invalidateQueries(["fetchJoinableRooms"]);
-            dispatch(setRoom(null));
-          },
-        }
+  const msgsRef = useRef(null);
+
+  const scrollToBottom = () => {
+    msgsRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    msgsRef.current?.scrollIntoView({ behavior: "smooth" });
+
+    socket.on("new message", ({ message }) => {
+      console.log(message);
+      queryClient.setQueryData(
+        ["fetchRoomMessages", message.roomId],
+        (prevMsgs) => (prevMsgs ?? []).concat(message)
       );
-    }
+    });
+
+    return () => {
+      socket.off("new message");
+    };
+  }, [room?._id]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [data?.length]);
+
+  const leaveRoom = () => {
+    mutate(
+      { roomId: room._id, userId: session.data.user.id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries(["fetchJoinedRooms"]);
+          queryClient.invalidateQueries(["fetchJoinableRooms"]);
+          dispatch(setRoom(null));
+        },
+      }
+    );
   };
 
   const { mutate: sendMessage } = useSendMessage();
 
   const onSend = () => {
-    sendMessage(
-      {
-        senderId: session.data.user?.id,
-        roomId: room._id,
-        text: msg,
-      },
-      { onSuccess: () => setMsg("") }
-    );
+    if (msg.trim().length > 0) {
+      sendMessage(
+        {
+          senderId: session.data.user?.id,
+          roomId: room._id,
+          text: msg,
+        },
+        { onSuccess: () => setMsg("") }
+      );
+    }
   };
 
   if (!room) {
@@ -57,7 +84,7 @@ export const Room = () => {
 
   return (
     <div className="col-span-3 border h-full max-h-full rounded-md overflow-y-scroll relative flex flex-col">
-      <div className="border-b p-4 bg-gray-100 sticky top-0 flex items-center justify-between">
+      <div className="border-b p-4 bg-gray-100 w-full flex items-center justify-between z-10 self-start">
         <h1 className="text-lg">{room?.name}</h1>
         <button
           className="text-sm border border-gray-700 text-gray-700 hover:bg-gray-200 rounded px-4 py-2"
@@ -67,7 +94,7 @@ export const Room = () => {
           {isLoading ? "Leaving" : "Leave room"}
         </button>
       </div>
-      <div className="h-full flex-1">
+      <div className="h-full flex-1 max-h-full overflow-y-scroll">
         {data.map((msg) => (
           <MessageBox
             position={
@@ -78,8 +105,9 @@ export const Room = () => {
             key={msg._id}
           />
         ))}
+        <div ref={msgsRef} />
       </div>
-      <div className="bg-gray-100 border-t border-t-gray-300 px-4 py-2">
+      <div className="bg-gray-100 border-t border-t-gray-300 px-4 py-2 self-end w-full">
         <Input
           className="border rounded-full overflow-hidden px-4"
           placeholder="Enter your message here"
