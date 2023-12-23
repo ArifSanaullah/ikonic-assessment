@@ -20,7 +20,9 @@ const getRoomMessages = async (req, res) => {
   const { roomId } = req.params;
 
   try {
-    const msgs = await Message.find({ roomId }).exec();
+    const msgs = await Message.find({ roomId })
+      .populate({ path: "senderId", select: "-password" })
+      .exec();
 
     return res.status(200).send(msgs);
   } catch (error) {
@@ -32,7 +34,9 @@ const getRecepientMessages = async (req, res) => {
   const { recepientId } = req.params;
 
   try {
-    const msgs = await Message.find({ recepientId }).exec();
+    const msgs = await Message.find({ recepientId })
+      .populate({ path: "senderId", select: "-password" })
+      .exec();
 
     return res.status(200).send(msgs);
   } catch (error) {

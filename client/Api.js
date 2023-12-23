@@ -182,6 +182,16 @@ class Api {
     return this.executeApiCall(0, "leaveRoom", false, apiCall);
   };
 
+  sendMessage = async (data) => {
+    const apiCall = axios({
+      method: "post",
+      url: `/messages`,
+      data,
+    });
+
+    return this.executeApiCall(0, "sendMessage", false, apiCall);
+  };
+
   isUserLoggedIn() {
     try {
       this.loadAccessToken();
