@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useAppDispatch } from "@/lib/hooks";
 import { setRoom } from "@/lib/roomSlice";
 
-export const CreateRoomModal = () => {
+export const RoomsModal = () => {
   const dialogRef = useRef(null);
 
   const methods = useForm({ shouldUnregister: false });

@@ -5,6 +5,8 @@ const helmet = require("helmet");
 
 const authRoutes = require("./src/routes/restRoutes/auth");
 const userRoutes = require("./src/routes/restRoutes/user");
+const roomRoutes = require("./src/routes/restRoutes/room");
+const messageRoutes = require("./src/routes/restRoutes/message");
 
 const app = express();
 
@@ -27,6 +29,8 @@ app.get("/health", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
+app.use("/rooms", roomRoutes);
+app.use("/messages", messageRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

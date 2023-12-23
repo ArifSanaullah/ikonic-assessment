@@ -3,15 +3,14 @@ const mongoose = require("mongoose");
 const messageSchema = new mongoose.Schema(
   {
     text: { type: String, required: true },
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    recepient: {
+    senderId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    recepientId: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: "recipientType",
+      ref: "User",
     },
-    recepientModel: {
-      type: String,
-      required: true,
-      enum: ["User", "Room"],
+    roomId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Room",
     },
   },
   { timestamps: true }

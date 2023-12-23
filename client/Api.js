@@ -116,6 +116,72 @@ class Api {
     return undefined;
   };
 
+  createRoom = async (data) => {
+    const apiCall = axios({
+      method: "post",
+      url: `rooms/`,
+      data,
+    });
+
+    return this.executeApiCall(0, "createRoom", false, apiCall);
+  };
+
+  getJoinedRooms = async (userId) => {
+    const apiCall = axios({
+      method: "get",
+      url: `rooms/joined/${userId}`,
+    });
+
+    return this.executeApiCall(1, "getJoinedRooms", false, apiCall);
+  };
+
+  getRoomMessages = async (roomId) => {
+    const apiCall = axios({
+      method: "get",
+      url: `/messages/room/${roomId}`,
+    });
+
+    return this.executeApiCall(0, "getRoomMessages", false, apiCall);
+  };
+
+  getJoinedRooms = async (userId) => {
+    const apiCall = axios({
+      method: "get",
+      url: `rooms/joined/${userId}`,
+    });
+
+    return this.executeApiCall(1, "getJoinedRooms", false, apiCall);
+  };
+
+  getJoinableRooms = async (userId) => {
+    const apiCall = axios({
+      method: "get",
+      url: `rooms/get-joinable-rooms/${userId}`,
+    });
+
+    return this.executeApiCall(1, "getJoinableRooms", false, apiCall);
+  };
+
+  joinRoom = async (data) => {
+    const apiCall = axios({
+      method: "patch",
+      url: `rooms/join-room`,
+      data,
+    });
+
+    return this.executeApiCall(0, "joinRoom", false, apiCall);
+  };
+
+  leaveRoom = async (data) => {
+    const apiCall = axios({
+      method: "patch",
+      url: `rooms/leave-room`,
+      data,
+    });
+
+    return this.executeApiCall(0, "leaveRoom", false, apiCall);
+  };
+
   isUserLoggedIn() {
     try {
       this.loadAccessToken();

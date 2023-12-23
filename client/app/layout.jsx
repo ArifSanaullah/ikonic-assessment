@@ -23,7 +23,7 @@ export default async function RootLayout({ children }) {
           <StoreProvider>
             <Provider>
               <Navbar />
-              <main>{children}</main>
+              <main className="min-h-[calc(100vh_-_64px)]">{children}</main>
             </Provider>
           </StoreProvider>
         </NextAuthProvider>

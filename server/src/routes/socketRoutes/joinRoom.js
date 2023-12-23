@@ -1,20 +1,22 @@
+const io = require(".");
 const Room = require("../../models/Room");
 
-function handleJoinRoom(socket, { email, room }) {
-  socket.on("createRoom", async ({ roomName }) => {
+function handleJoinRoom(socket) {
+  socket.on("createRoom", async ({ name: roomName, users, createdBy }) => {
     // Create a new room and associate it with the creator
-    const room = new Room({ name: roomName, users: [socket.user._id] });
+    const room = new Room({
+      name: roomName,
+      users,
+      createdBy,
+    });
     const newRoom = await room.save();
 
     // Notify everyone about the new room
-    io.emit("roomCreated", {
+    socket.emit("roomCreated", {
       roomName,
       _id: newRoom._id,
       users: newRoom.users,
     });
-
-    // Join the created room
-    socket.join(roomName);
 
     // Emit event to notify the user about successful room creation
     socket.emit("roomCreated", { roomName });
@@ -42,6 +44,12 @@ function handleJoinRoom(socket, { email, room }) {
         users: room.users.map((userId) => userId.toString()),
       });
     }
+  });
+
+  socket.on("getJoinedRooms", async (userId) => {
+    const rooms = await Room.find({ users: userId }).exec();
+
+    socket.emit("joinedRooms", rooms);
   });
 }
 

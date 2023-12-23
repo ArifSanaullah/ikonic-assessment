@@ -1,8 +1,10 @@
-import { socket } from "@/lib/socket";
+import Api from "@/Api";
+import { queryClient } from "@/providers/ReactQueryProvider";
 import { useMutation } from "react-query";
 
-export const useCreateRoom = () => {
-  return useMutation((data) => {
-    socket.emit("createRoom", data);
+export const useCreateRoom = () =>
+  useMutation(Api.createRoom, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["fetchJoinedRooms"]);
+    },
   });
-};
