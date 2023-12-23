@@ -5,6 +5,7 @@ import "./globals.css";
 import Provider from "@/providers/ReactQueryProvider";
 import StoreProvider from "@/providers/StoreProvider";
 import NextAuthProvider from "@/providers/NextAuthProvider";
+import { Navbar } from "@/components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,10 @@ export default async function RootLayout({ children }) {
       <body className={inter.className}>
         <NextAuthProvider session={session}>
           <StoreProvider>
-            <Provider>{children}</Provider>
+            <Provider>
+              <Navbar />
+              <main>{children}</main>
+            </Provider>
           </StoreProvider>
         </NextAuthProvider>
       </body>

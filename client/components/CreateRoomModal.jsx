@@ -1,9 +1,12 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
+import { PlusIcon } from "@heroicons/react/24/outline";
 
-export const CreateRoomDialog = () => {
+export const CreateRoomModal = () => {
   const [showModal, setShowModal] = useState(false);
 
   const dialogRef = useRef(null);
+
   useEffect(() => {
     if (dialogRef.current?.open && !showModal) {
       dialogRef.current?.close();
@@ -14,8 +17,14 @@ export const CreateRoomDialog = () => {
 
   return (
     <div>
-      <button onClick={() => dialogRef?.current?.showModal()}>
-        Create room
+      <button
+        onClick={() => dialogRef?.current?.showModal()}
+        type="button"
+        className="relative flex items-center gap-2 py-1 px-1 sm:px-4 border bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
+      >
+        <span className="absolute -inset-1.5" />
+        <PlusIcon className="h-4 w-4" aria-hidden="true" />
+        <span className="hidden sm:block whitespace-nowrap">Create Room</span>
       </button>
       <dialog ref={dialogRef} onBlur={() => setShowModal(false)}>
         <form>
@@ -83,6 +92,7 @@ export const CreateRoomDialog = () => {
             <button
               type="button"
               className="text-sm font-semibold leading-6 text-gray-900"
+              onClick={() => setShowModal(false)}
             >
               Cancel
             </button>
