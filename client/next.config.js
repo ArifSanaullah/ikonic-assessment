@@ -1,4 +1,10 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {}
+const nextConfig = {
+  env: {
+    GITHUB_APP_CLIENT_ID: "Iv1.1cc7a38a43f38b21",
+    GITHUB_APP_CLIENT_SECRET: "ca9a3a6ad4c9324dfb7bb214756f5dcf6ab9e0c4",
+    NEXTAUTH_SECRET: "RBHom7KQJSO2zULTHQA4jqfAKk+mCIf24luz0FWy+1Y=",
+  },
+};
 
 module.exports = nextConfig
