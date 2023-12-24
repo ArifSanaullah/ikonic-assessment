@@ -33,7 +33,7 @@ const getTypingUsersInRoom = (typingUsers, room, users, currentUser) => {
       typingUsers.some(
         (u) =>
           u.userId === user._id &&
-          room.users.includes(u.userId) &&
+          room?.users.includes(u.userId) &&
           u.roomId === room._id
       )
     )
