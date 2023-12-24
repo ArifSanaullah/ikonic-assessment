@@ -10,10 +10,8 @@ export const User = ({ user, onSuccess }) => {
   const { mutate } = useCreateRoom();
 
   const { onlineUsers } = useAppSelector((state) => state.user);
-  console.log("🚀 ~ file: User.jsx:13 ~ User ~ onlineUsers:", onlineUsers);
 
   const isOnline = onlineUsers.some((u) => u.userId === user._id);
-  console.log("🚀 ~ file: User.jsx:15 ~ User ~ isOnline:", isOnline);
 
   const session = useSession();
 
