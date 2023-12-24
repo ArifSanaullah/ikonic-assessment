@@ -1,36 +1,26 @@
+const io = require(".");
+const Message = require("../../models/Message");
 const Room = require("../../models/Room");
 
 const rooms = {};
 
-function handleSendMessage(socket, { email, room, text }) {
-  // Save the message to the room
-  // if (rooms[room]) {
-  //   rooms[room].messages.push({ email, text });
-  //   // Keep only the last 10 messages
-  //   rooms[room].messages = rooms[room].messages.slice(-10);
-  // }
+function handleSendMessage(socket) {
+  socket.on("send message", async ({ recepientId, senderId, text, roomId }) => {
+    console.log(
+      "🚀 ~ file: sendMessage.js:8 ~ socket.on ~ { recepientId, senderId, text, roomId }:",
+      { recepientId, senderId, text, roomId }
+    );
+    const msg = new Message({ recepientId, senderId, text, roomId });
+    const msgDoc = (await msg.save()).populate({
+      path: "senderId roomId",
+      select: "-password",
+    });
 
-  // // Broadcast the message to everyone in the room
-  // socket.to(room).emit("message", { email, text });
+    const msgObj = (await msgDoc).toObject();
 
-  socket.on("sendMessage", async ({ roomName, text, recipient }) => {
-    // Save the message to the room
-    const room = await Room.findById({ name: roomName });
-    if (room) {
-      room.messages.push({
-        sender: socket.user._id,
-        text,
-        recipient,
-      });
-      await room.save();
-
-      // Broadcast the message to everyone in the room
-      io.to(roomName).emit("message", {
-        email: socket.user.email,
-        text,
-        recipient,
-      });
-    }
+    socket.emit("new message", {
+      message: msgObj,
+    });
   });
 
   socket.on("privateMessage", async ({ recipient, text }) => {

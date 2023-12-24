@@ -10,7 +10,7 @@ io.on("connection", (socket) => {
   console.log("A user connected");
 
   socket.on("room", (data) => handleJoinRoom(socket, data));
-  socket.on("sendMessage", (data) => handleSendMessage(socket, data));
+  socket.on("messages", (data) => handleSendMessage(socket, data));
   socket.on("disconnect", () => handleDisconnect(socket));
 });
 

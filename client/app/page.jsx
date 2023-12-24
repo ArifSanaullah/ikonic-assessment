@@ -23,16 +23,17 @@ const Home = () => {
 
   useEffect(() => {
     socket.on("new message", ({ message }) => {
-      console.log(message);
       queryClient.setQueryData(
         ["fetchRoomMessages", message.roomId._id],
         (prevMsgs) => (prevMsgs ?? []).concat(message)
       );
-      console.log({ user });
-      if (message.senderId._id !== user?.id) {
+      if (
+        message.senderId._id !== user?.id &&
+        message.roomId.users.includes(user?.id)
+      ) {
         showToast({
           iconType: "success",
-          message: `You have a new message in ${message.roomId.name}`,
+          message: `You have a new message in ${message.roomId.name} from ${message.senderId.email}`,
           title: "New message",
         });
       }

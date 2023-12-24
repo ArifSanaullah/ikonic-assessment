@@ -9,7 +9,7 @@ import { useLeaveRoom } from "@/lib/hooks/rooms/useLeaveRoom";
 import { setRoom } from "@/lib/roomSlice";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { useSendMessage } from "@/lib/hooks/message/useSendMessage";
-
+import { socket } from "@/lib/socket";
 
 export const Room = () => {
   const [msg, setMsg] = useState("");
@@ -22,7 +22,7 @@ export const Room = () => {
 
   const { data = [] } = useFetchRoomMessages(room?._id);
 
-  const { mutate, isLoading } = useLeaveRoom();
+  const { sendMessagemutate, isLoading } = useLeaveRoom();
 
   const msgsRef = useRef(null);
 
@@ -32,11 +32,7 @@ export const Room = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [room?._id]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [data?.length]);
+  }, [room?._id, data?.length]);
 
   const leaveRoom = () => {
     mutate(
@@ -61,8 +57,16 @@ export const Room = () => {
           roomId: room._id,
           text: msg,
         },
-        { onSuccess: () => setMsg("") }
+        {
+          onSuccess: () => setMsg(""),
+        }
       );
+      // may be we should send messages via socket but it's not optimized in the server yet to correctly receive messaages
+      // socket.emit("messages").emit("send message", {
+      //   senderId: session?.data?.user?.id,
+      //   roomId: room._id,
+      //   text: msg,
+      // });
     }
   };
 
@@ -72,7 +76,7 @@ export const Room = () => {
 
   return (
     <div className="col-span-3 border h-full max-h-full rounded-md overflow-y-scroll relative flex flex-col">
-      <div className="border-b p-4 bg-gray-100 w-full flex items-center justify-between z-10 self-start">
+      <div className="border-b p-4 bg-gray-100 w-full flex items-center justify-between z-1 self-start">
         <h1 className="text-lg">{room?.name}</h1>
         <button
           className="text-sm border border-gray-700 text-gray-700 hover:bg-gray-200 rounded px-4 py-2"
@@ -90,6 +94,7 @@ export const Room = () => {
             }
             type={"text"}
             text={msg.text}
+            date={msg.createdAt}
             key={msg._id}
           />
         ))}
