@@ -6,6 +6,7 @@ import Provider from "@/providers/ReactQueryProvider";
 import StoreProvider from "@/providers/StoreProvider";
 import NextAuthProvider from "@/providers/NextAuthProvider";
 import { Navbar } from "@/components/Navbar";
+import { Toast } from "@/components/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default async function RootLayout({ children }) {
           <StoreProvider>
             <Provider>
               <Navbar />
+              <Toast />
               <main className="min-h-[calc(100vh_-_64px)]">{children}</main>
             </Provider>
           </StoreProvider>

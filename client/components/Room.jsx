@@ -9,7 +9,7 @@ import { useLeaveRoom } from "@/lib/hooks/rooms/useLeaveRoom";
 import { setRoom } from "@/lib/roomSlice";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { useSendMessage } from "@/lib/hooks/message/useSendMessage";
-import { socket } from "@/lib/socket";
+
 
 export const Room = () => {
   const [msg, setMsg] = useState("");
@@ -20,7 +20,7 @@ export const Room = () => {
 
   const session = useSession();
 
-  const { data = [], refetch } = useFetchRoomMessages(room?._id);
+  const { data = [] } = useFetchRoomMessages(room?._id);
 
   const { mutate, isLoading } = useLeaveRoom();
 
@@ -31,19 +31,7 @@ export const Room = () => {
   };
 
   useEffect(() => {
-    msgsRef.current?.scrollIntoView({ behavior: "smooth" });
-
-    socket.on("new message", ({ message }) => {
-      console.log(message);
-      queryClient.setQueryData(
-        ["fetchRoomMessages", message.roomId],
-        (prevMsgs) => (prevMsgs ?? []).concat(message)
-      );
-    });
-
-    return () => {
-      socket.off("new message");
-    };
+    scrollToBottom();
   }, [room?._id]);
 
   useEffect(() => {

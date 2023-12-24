@@ -1,11 +1,14 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFetchJoinedRooms } from "@/lib/hooks/rooms/useFetchJoinedRooms";
 import { RoomItem } from "@/components/RoomItem";
 import { useAppSelector } from "@/lib/hooks";
 import { Room } from "@/components/Room";
+import { socket } from "@/lib/socket";
+import { queryClient } from "@/providers/ReactQueryProvider";
+import { useToast } from "@/components/useToast";
 
 const Home = () => {
   const session = useSession();
@@ -13,6 +16,32 @@ const Home = () => {
   const { room } = useAppSelector((state) => state.room);
 
   const { data = [], isLoading } = useFetchJoinedRooms(session?.data?.user?.id);
+
+  const { showToast } = useToast();
+
+  const user = session?.data?.user;
+
+  useEffect(() => {
+    socket.on("new message", ({ message }) => {
+      console.log(message);
+      queryClient.setQueryData(
+        ["fetchRoomMessages", message.roomId._id],
+        (prevMsgs) => (prevMsgs ?? []).concat(message)
+      );
+      console.log({ user });
+      if (message.senderId._id !== user?.id) {
+        showToast({
+          iconType: "success",
+          message: `You have a new message in ${message.roomId.name}`,
+          title: "New message",
+        });
+      }
+    });
+
+    return () => {
+      socket.off("new message");
+    };
+  }, [user?.id]);
 
   if (!session || !session?.data?.user) {
     redirect("api/auth/signin");

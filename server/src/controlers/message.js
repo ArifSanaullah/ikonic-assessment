@@ -8,7 +8,7 @@ const createMessage = async (req, res) => {
 
     const msg = new Message({ recepientId, senderId, text, roomId });
     const msgDoc = (await msg.save()).populate({
-      path: "senderId",
+      path: "senderId roomId",
       select: "-password",
     });
 
