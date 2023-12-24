@@ -3,6 +3,10 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const Room = require("../models/Room");
+const { createMessage } = require("./message");
+const User = require("../models/User");
+const Message = require("../models/Message");
+const io = require("../routes/socketRoutes");
 
 // Get room with email address
 const createRoom = async (req, res) => {
@@ -92,6 +96,10 @@ const joinRoom = async (req, res) => {
         // Save the updated room to the database
         await room.save();
 
+        const user = await User.findById(userId);
+
+        io.emit("join room", { room, user: user.toObject() });
+
         res.status(200).send(room);
       }
     }
@@ -115,6 +123,10 @@ const leaveRoom = async (req, res) => {
 
         // Save the updated room to the database
         await room.save();
+
+        const user = await User.findById(userId);
+
+        io.emit("leave room", { room, user: user.toObject() });
 
         res.status(200).send(room);
       } else {
