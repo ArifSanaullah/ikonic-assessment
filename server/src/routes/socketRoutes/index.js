@@ -1,5 +1,4 @@
 const { Server } = require("socket.io");
-const handleJoinRoom = require("./joinRoom");
 const handleSendMessage = require("./sendMessage");
 const handleDisconnect = require("./disconnect");
 const server = require("../../../server");
