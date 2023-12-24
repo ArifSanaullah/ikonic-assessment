@@ -6,6 +6,7 @@ import classNames from "classnames";
 import { signOut, useSession } from "next-auth/react";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { AvailableRoomsModal } from "./AvailableRoomsModal";
+import { UsersModal } from "./UsersModal";
 
 const navigation = [
   { name: "Dashboard", href: "#", current: true },
@@ -63,6 +64,7 @@ export const Navbar = () => {
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 gap-2">
+                <UsersModal />
                 <AvailableRoomsModal />
                 <CreateRoomModal />
                 <Menu as="div" className="relative ml-3">

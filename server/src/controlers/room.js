@@ -7,7 +7,7 @@ const Room = require("../models/Room");
 // Get room with email address
 const createRoom = async (req, res) => {
   try {
-    const { users, name, createdBy } = req.body;
+    const { users, name, createdBy, isPrivate } = req.body;
 
     if (!users || !name || !createdBy) {
       return res.status(401).send({ message: "Invalid data", success: false });
@@ -17,6 +17,7 @@ const createRoom = async (req, res) => {
       users,
       name,
       createdBy,
+      isPrivate,
       _id: new mongoose.Types.ObjectId(),
     });
 
@@ -49,6 +50,7 @@ const getJoinedRooms = async (req, res) => {
 
   try {
     const rooms = await Room.find({ users: userId })
+      .populate("createdBy")
       .sort({ createdAt: "desc" })
       .exec();
 
@@ -124,6 +126,19 @@ const leaveRoom = async (req, res) => {
   }
 };
 
+const deleteRoom = async (req, res) => {
+  const { roomId } = req.params;
+  console.log("🚀 ~ file: room.js:131 ~ deleteRoom ~ roomId:", roomId);
+
+  try {
+    const room = await Room.findByIdAndDelete(roomId).exec();
+
+    res.status(200).send({ success: true, room });
+  } catch (error) {
+    res.status(500).send({ message: error.message, success: false });
+  }
+};
+
 module.exports = {
   createRoom,
   getUserRooms,
@@ -131,4 +146,5 @@ module.exports = {
   getJoinableRooms,
   joinRoom,
   leaveRoom,
+  deleteRoom,
 };

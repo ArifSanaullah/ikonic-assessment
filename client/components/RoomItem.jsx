@@ -1,12 +1,15 @@
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { setRoom } from "@/lib/roomSlice";
 import classNames from "classnames";
+import { useSession } from "next-auth/react";
 import React from "react";
 
 export const RoomItem = ({ room }) => {
   const dispatch = useAppDispatch();
 
   const { room: selectedRoom } = useAppSelector((state) => state.room);
+
+  const session = useSession();
 
   const onClickRoom = () => {
     dispatch(setRoom(room));
@@ -25,7 +28,11 @@ export const RoomItem = ({ room }) => {
       )}
       key={room?._id}
     >
-      {room.name}
+      {!room.isPrivate
+        ? room.name
+        : room.createdBy._id === session.data.user?.id
+        ? room.name
+        : room.createdBy.email}
     </button>
   );
 };

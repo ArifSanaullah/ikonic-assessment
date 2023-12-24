@@ -45,12 +45,15 @@ const createUser = async (req, res) => {
 const getUserByEmail = async (req, res) => {
   try {
     const { email } = req.params;
-    console.log("🚀 ~ file: user.js:48 ~ getUserByEmail ~ email:", email);
 
     if (!email) {
       return res
         .status(403)
         .send({ message: "Email is required", success: false });
+    }
+
+    if (email === "all") {
+      return fetchUsers(req, res);
     }
 
     const user = await User.findOne({ email });
@@ -109,4 +112,19 @@ const getOrCreateUserByEmail = async (req, res) => {
   }
 };
 
-module.exports = { getUserByEmail, createUser, getOrCreateUserByEmail };
+const fetchUsers = async (req, res) => {
+  try {
+    const users = await User.find().select("-password");
+
+    res.status(200).send(users);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+module.exports = {
+  getUserByEmail,
+  createUser,
+  getOrCreateUserByEmail,
+  fetchUsers,
+};

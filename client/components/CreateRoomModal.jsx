@@ -31,6 +31,7 @@ export const CreateRoomModal = () => {
           ...data,
           users: [session.data.user.id],
           createdBy: session.data.user.id,
+          isPrivate: false,
         },
         {
           onSuccess: (data) => {

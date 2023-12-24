@@ -192,6 +192,25 @@ class Api {
     return this.executeApiCall(0, "sendMessage", false, apiCall);
   };
 
+  fetchUsers = async () => {
+    const apiCall = axios({
+      method: "get",
+      url: `/user/all`,
+    });
+
+    return this.executeApiCall(1, "fetchUsers", false, apiCall);
+  };
+
+  deleteRoom = async (roomId) => {
+    console.log("🚀 ~ file: Api.js:205 ~ Api ~ deleteRoom ~ roomId:", roomId);
+    const apiCall = axios({
+      method: "delete",
+      url: `/rooms/delete/${roomId}`,
+    });
+
+    return this.executeApiCall(1, "deleteRoom", false, apiCall);
+  };
+
   isUserLoggedIn() {
     try {
       this.loadAccessToken();

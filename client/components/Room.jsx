@@ -9,7 +9,8 @@ import { useLeaveRoom } from "@/lib/hooks/rooms/useLeaveRoom";
 import { setRoom } from "@/lib/roomSlice";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { useSendMessage } from "@/lib/hooks/message/useSendMessage";
-import { socket } from "@/lib/socket";
+import { useDeleteRoom } from "@/lib/hooks/rooms/useDeleteRoom";
+import { useFetchJoinedRooms } from "@/lib/hooks/rooms/useFetchJoinedRooms";
 
 export const Room = () => {
   const [msg, setMsg] = useState("");
@@ -22,7 +23,13 @@ export const Room = () => {
 
   const { data = [] } = useFetchRoomMessages(room?._id);
 
-  const { sendMessagemutate, isLoading } = useLeaveRoom();
+  const { data: joinedRooms = [] } = useFetchJoinedRooms(
+    session?.data?.user?.id
+  );
+
+  const { mutate, isLoading } = useLeaveRoom();
+
+  const { mutate: deleteRoom, isLoading: deletingRoom } = useDeleteRoom();
 
   const msgsRef = useRef(null);
 
@@ -70,6 +77,16 @@ export const Room = () => {
     }
   };
 
+  const handleDeleteRoom = () => {
+    deleteRoom(room._id, {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["fetchJoinedRooms"]);
+        queryClient.invalidateQueries(["fetchJoinableRooms"]);
+        dispatch(setRoom(joinedRooms[1] || joinedRooms[0]));
+      },
+    });
+  };
+
   if (!room) {
     return <div className="w-full h-full">Please select a room</div>;
   }
@@ -78,13 +95,23 @@ export const Room = () => {
     <div className="col-span-3 border h-full max-h-full rounded-md overflow-y-scroll relative flex flex-col">
       <div className="border-b p-4 bg-gray-100 w-full flex items-center justify-between z-1 self-start">
         <h1 className="text-lg">{room?.name}</h1>
-        <button
-          className="text-sm border border-gray-700 text-gray-700 hover:bg-gray-200 rounded px-4 py-2"
-          onClick={leaveRoom}
-          disabled={isLoading}
-        >
-          {isLoading ? "Leaving" : "Leave room"}
-        </button>
+        {room.isPrivate ? (
+          <button
+            className="text-sm border border-gray-700 text-gray-700 hover:bg-gray-200 rounded px-4 py-2"
+            onClick={handleDeleteRoom}
+            disabled={deletingRoom}
+          >
+            {deletingRoom ? "Deleting" : "Delete"}
+          </button>
+        ) : (
+          <button
+            className="text-sm border border-gray-700 text-gray-700 hover:bg-gray-200 rounded px-4 py-2"
+            onClick={leaveRoom}
+            disabled={isLoading}
+          >
+            {isLoading ? "Leaving" : "Leave room"}
+          </button>
+        )}
       </div>
       <div className="h-full flex-1 max-h-full overflow-y-scroll">
         {data.map((msg) => (
@@ -95,6 +122,11 @@ export const Room = () => {
             type={"text"}
             text={msg.text}
             date={msg.createdAt}
+            title={
+              msg.senderId._id === session.data.user.id
+                ? null
+                : msg.senderId.email
+            }
             key={msg._id}
           />
         ))}

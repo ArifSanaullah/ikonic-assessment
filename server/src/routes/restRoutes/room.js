@@ -6,6 +6,7 @@ const {
   getJoinableRooms,
   joinRoom,
   leaveRoom,
+  deleteRoom,
 } = require("../../controlers/room");
 
 const router = express.Router();
@@ -16,5 +17,7 @@ router.get("/user/:userId", getUserRooms);
 router.get("/joined/:userId", getJoinedRooms);
 router.patch("/join-room", joinRoom);
 router.patch("/leave-room", leaveRoom);
+router.delete("/delete/:roomId", deleteRoom);
+
 
 module.exports = router;
