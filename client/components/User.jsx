@@ -1,4 +1,4 @@
-import { useAppDispatch } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { useCreateRoom } from "@/lib/hooks/rooms/useCreateRoom";
 import { setRoom } from "@/lib/roomSlice";
 import { useSession } from "next-auth/react";
@@ -8,6 +8,12 @@ export const User = ({ user, onSuccess }) => {
   const dispatch = useAppDispatch();
 
   const { mutate } = useCreateRoom();
+
+  const { onlineUsers } = useAppSelector((state) => state.user);
+  console.log("🚀 ~ file: User.jsx:13 ~ User ~ onlineUsers:", onlineUsers);
+
+  const isOnline = onlineUsers.some((u) => u.userId === user._id);
+  console.log("🚀 ~ file: User.jsx:15 ~ User ~ isOnline:", isOnline);
 
   const session = useSession();
 
@@ -21,7 +27,7 @@ export const User = ({ user, onSuccess }) => {
       },
       {
         onSuccess: (res) => {
-          dispatch(setRoom(res));
+          dispatch(setRoom(res.room));
           onSuccess(res);
         },
       }
@@ -30,7 +36,10 @@ export const User = ({ user, onSuccess }) => {
 
   return (
     <div className="border p-4 rounded flex items-center justify-between">
-      <p>{user.email}</p>
+      <div>
+        <p>{user.email}</p>
+        {isOnline && <span className="text-xs text-indigo-500">Online</span>}
+      </div>
       <button
         className="bg-indigo-500 px-4 py-2 rounded text-white hover:bg-indigo-600"
         onClick={() => createRoom(user)}

@@ -16,10 +16,17 @@ export const Room = () => {
   const [msg, setMsg] = useState("");
 
   const { room } = useAppSelector((state) => state.room);
-
-  const dispatch = useAppDispatch();
+  const { onlineUsers } = useAppSelector((state) => state.user);
 
   const session = useSession();
+
+  const otherUserId = room?.users[1];
+
+  const currentUserId = session?.data?.user?.id;
+
+  const isOnline = onlineUsers.map((u) => u.userId).includes(otherUserId);
+
+  const dispatch = useAppDispatch();
 
   const { data = [] } = useFetchRoomMessages(room?._id);
 
@@ -94,7 +101,10 @@ export const Room = () => {
   return (
     <div className="col-span-3 border h-full max-h-full rounded-md overflow-y-scroll relative flex flex-col">
       <div className="border-b p-4 bg-gray-100 w-full flex items-center justify-between z-1 self-start">
-        <h1 className="text-lg">{room?.name}</h1>
+        <div>
+          <h1 className="text-lg">{room?.name}</h1>
+          {room.isPrivate && <span>{isOnline ? "Online" : "Offline"}</span>}
+        </div>
         {room.isPrivate ? (
           <button
             className="text-sm border border-gray-700 text-gray-700 hover:bg-gray-200 rounded px-4 py-2"

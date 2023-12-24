@@ -4,22 +4,35 @@ import { redirect } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useFetchJoinedRooms } from "@/lib/hooks/rooms/useFetchJoinedRooms";
 import { RoomItem } from "@/components/RoomItem";
-import { useAppSelector } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { Room } from "@/components/Room";
 import { socket } from "@/lib/socket";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { useToast } from "@/components/useToast";
+import { setOnlineUsers } from "@/lib/userSlice";
 
 const Home = () => {
   const session = useSession();
-
-  const { room } = useAppSelector((state) => state.room);
 
   const { data = [], isLoading } = useFetchJoinedRooms(session?.data?.user?.id);
 
   const { showToast } = useToast();
 
+  const dispatch = useAppDispatch();
+
   const user = session?.data?.user;
+
+  useEffect(() => {
+    if (socket && session?.data?.user?.id) {
+      socket.emit("new user", session?.data?.user?.id);
+    }
+  }, [session?.data?.user?.id, socket]);
+
+  useEffect(() => {
+    socket?.on("get online users", (users) => {
+      dispatch(setOnlineUsers(users));
+    });
+  }, [socket]);
 
   useEffect(() => {
     socket.on("new message", ({ message }) => {
