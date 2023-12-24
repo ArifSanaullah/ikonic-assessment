@@ -30,8 +30,14 @@ const Home = () => {
 
   useEffect(() => {
     socket?.on("get online users", (users) => {
+      console.log("🚀 ~ file: page.jsx:33 ~ socket?.on ~ users:", users);
       dispatch(setOnlineUsers(users));
     });
+
+    return () => {
+      socket.emit("go offline", session.data.user.id);
+      socket.off("get online users");
+    };
   }, [socket]);
 
   useEffect(() => {

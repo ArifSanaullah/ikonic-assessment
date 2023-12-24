@@ -12,22 +12,25 @@ let typingUsers = [];
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("new user", (userId) => {
+  io.on("new user", (userId) => {
     const existingUser = onlineUsers.find((u) => u.userId === userId);
 
     if (!existingUser) {
       onlineUsers.push({ userId, socketId: socket.id });
+      io.emit("get online users", onlineUsers);
     }
   });
 
-  socket.emit("get online users", onlineUsers);
+  io.on("go offline", (userId) => {
+    const idx = onlineUsers.findIndex((u) => u.userId === userId);
+
+    if (idx !== -1) {
+      onlineUsers.splice(idx, 1);
+      io.emit("get online users", onlineUsers);
+    }
+  });
 
   socket.on("typing start", ({ room, user }) => {
-    console.log("🚀 ~ file: index.js:36 ~ socket.on ~ { room, user }:", {
-      room,
-      user,
-    });
-
     const existingUser = typingUsers.find(
       (u) => u.userId === user.id && room._id === u.roomId
     );

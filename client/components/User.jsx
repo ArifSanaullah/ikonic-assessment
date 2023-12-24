@@ -9,7 +9,7 @@ export const User = ({ user, onSuccess }) => {
 
   const { mutate } = useCreateRoom();
 
-  const { onlineUsers } = useAppSelector((state) => state.user);
+  const { onlineUsers = [] } = useAppSelector((state) => state.user);
 
   const isOnline = onlineUsers.some((u) => u.userId === user._id);
 
