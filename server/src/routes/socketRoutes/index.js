@@ -12,16 +12,16 @@ let typingUsers = [];
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  io.on("new user", (userId) => {
+  socket.on("new user", (userId) => {
     const existingUser = onlineUsers.find((u) => u.userId === userId);
 
     if (!existingUser) {
       onlineUsers.push({ userId, socketId: socket.id });
-      io.emit("get online users", onlineUsers);
     }
   });
+  io.emit("get online users", onlineUsers);
 
-  io.on("go offline", (userId) => {
+  socket.on("go offline", (userId) => {
     const idx = onlineUsers.findIndex((u) => u.userId === userId);
 
     if (idx !== -1) {
@@ -48,7 +48,6 @@ io.on("connection", (socket) => {
     io.emit("get typing users", typingUsers);
   });
 
-  socket.on("room", (data) => handleJoinRoom(socket, data));
   socket.on("messages", (data) => handleSendMessage(socket, data));
   socket.on("disconnect", () => {
     return handleDisconnect(socket);
