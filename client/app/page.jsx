@@ -9,7 +9,7 @@ import { Room } from "@/components/Room";
 import { socket } from "@/lib/socket";
 import { queryClient } from "@/providers/ReactQueryProvider";
 import { useToast } from "@/components/useToast";
-import { setOnlineUsers } from "@/lib/userSlice";
+import { setOnlineUsers, setTypingUsers } from "@/lib/userSlice";
 
 const Home = () => {
   const session = useSession();
@@ -32,6 +32,16 @@ const Home = () => {
     socket?.on("get online users", (users) => {
       dispatch(setOnlineUsers(users));
     });
+  }, [socket]);
+
+  useEffect(() => {
+    socket?.on("get typing users", (typingUsers) => {
+      dispatch(setTypingUsers(typingUsers));
+    });
+
+    return () => {
+      socket.off("get typing users");
+    };
   }, [socket]);
 
   useEffect(() => {

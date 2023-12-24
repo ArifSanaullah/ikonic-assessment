@@ -11,20 +11,55 @@ import { queryClient } from "@/providers/ReactQueryProvider";
 import { useSendMessage } from "@/lib/hooks/message/useSendMessage";
 import { useDeleteRoom } from "@/lib/hooks/rooms/useDeleteRoom";
 import { useFetchJoinedRooms } from "@/lib/hooks/rooms/useFetchJoinedRooms";
+import { socket } from "@/lib/socket";
+import { useFetchUsers } from "@/lib/hooks/users/useFetchUsers";
+
+const getTypingUsersInRoom = (typingUsers, room, users, currentUser) => {
+  if (room?.isPrivate) {
+    return users
+      .filter((user) =>
+        typingUsers.some(
+          (u) =>
+            u.userId === user._id &&
+            u.userId === room.users[0] &&
+            u.roomId === room._id
+        )
+      )
+      .filter((u) => u._id !== currentUser.id);
+  }
+
+  return users
+    .filter((user) =>
+      typingUsers.some(
+        (u) =>
+          u.userId === user._id &&
+          room.users.includes(u.userId) &&
+          u.roomId === room._id
+      )
+    )
+    .filter((u) => u._id !== currentUser.id);
+};
 
 export const Room = () => {
   const [msg, setMsg] = useState("");
 
   const { room } = useAppSelector((state) => state.room);
-  const { onlineUsers } = useAppSelector((state) => state.user);
+  const { onlineUsers, typingUsers } = useAppSelector((state) => state.user);
 
   const session = useSession();
 
+  const { data: users = [] } = useFetchUsers();
+
   const otherUserId = room?.users[1];
 
-  const currentUserId = session?.data?.user?.id;
-
   const isOnline = onlineUsers.map((u) => u.userId).includes(otherUserId);
+
+  const currentlyTypingUsers = getTypingUsersInRoom(
+    typingUsers,
+    room,
+    users,
+    session.data.user
+  );
 
   const dispatch = useAppDispatch();
 
@@ -75,12 +110,6 @@ export const Room = () => {
           onSuccess: () => setMsg(""),
         }
       );
-      // may be we should send messages via socket but it's not optimized in the server yet to correctly receive messaages
-      // socket.emit("messages").emit("send message", {
-      //   senderId: session?.data?.user?.id,
-      //   roomId: room._id,
-      //   text: msg,
-      // });
     }
   };
 
@@ -102,8 +131,25 @@ export const Room = () => {
     <div className="col-span-3 border h-full max-h-full rounded-md overflow-y-scroll relative flex flex-col">
       <div className="border-b p-4 bg-gray-100 w-full flex items-center justify-between z-1 self-start">
         <div>
-          <h1 className="text-lg">{room?.name}</h1>
-          {room.isPrivate && <span>{isOnline ? "Online" : "Offline"}</span>}
+          <h1 className="text-lg">
+            {room.isPrivate && room.createdBy._id !== session?.data.user.id
+              ? room.createdBy.email
+              : room.name}
+          </h1>
+          <div className="flex flex-col">
+            {currentlyTypingUsers.length > 0 && (
+              <span>
+                {room.isPrivate
+                  ? "Typing..."
+                  : `${currentlyTypingUsers
+                      .map((u) => u.email)
+                      .join(", ")} is/are typing...`}
+              </span>
+            )}
+            {room.isPrivate && (
+              <span className="text-xs">{isOnline ? "Online" : "Offline"}</span>
+            )}
+          </div>
         </div>
         {room.isPrivate ? (
           <button
@@ -147,6 +193,12 @@ export const Room = () => {
           className="border rounded-full overflow-hidden px-4"
           placeholder="Enter your message here"
           value={msg}
+          onFocus={() =>
+            socket.emit("typing start", { room, user: session?.data?.user })
+          }
+          onBlur={() =>
+            socket.emit("typing end", { room, user: session?.data?.user })
+          }
           onKeyPress={(e) => e.key === "Enter" && onSend()}
           onChange={(e) => setMsg(e.nativeEvent.target.value)}
           autofocus

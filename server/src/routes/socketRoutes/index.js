@@ -6,7 +6,8 @@ const server = require("../../../server");
 
 const io = new Server({ ...server, cors: "*" });
 
-let onlineUsers = [];
+const onlineUsers = [];
+let typingUsers = [];
 
 io.on("connection", (socket) => {
   console.log("A user connected");
@@ -21,10 +22,32 @@ io.on("connection", (socket) => {
 
   socket.emit("get online users", onlineUsers);
 
+  socket.on("typing start", ({ room, user }) => {
+    console.log("🚀 ~ file: index.js:36 ~ socket.on ~ { room, user }:", {
+      room,
+      user,
+    });
+
+    const existingUser = typingUsers.find(
+      (u) => u.userId === user.id && room._id === u.roomId
+    );
+    if (!existingUser) {
+      typingUsers.push({ userId: user.id, roomId: room._id });
+      io.emit("get typing users", typingUsers);
+    }
+  });
+
+  socket.on("typing end", ({ room, user }) => {
+    typingUsers = typingUsers.filter(
+      (u) => !(u.userId === user.id && room._id === u.roomId)
+    );
+
+    io.emit("get typing users", typingUsers);
+  });
+
   socket.on("room", (data) => handleJoinRoom(socket, data));
   socket.on("messages", (data) => handleSendMessage(socket, data));
   socket.on("disconnect", () => {
-    // onlineUsers = onlineUsers.filter(u => u.socket ===)
     return handleDisconnect(socket);
   });
 });
