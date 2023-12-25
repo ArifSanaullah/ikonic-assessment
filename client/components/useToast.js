@@ -8,7 +8,13 @@ export const useToast = () => {
     iconType = "success",
     message = "Success",
     title = "Alert",
-  }) => dispatch(showToast({ icon: iconType, message, title }));
+  }) => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      console.log("Sending notification to device");
+      new Notification(title, { body: message });
+    }
+    dispatch(showToast({ icon: iconType, message, title }));
+  };
 
   const handleHideToast = () => dispatch(hideToast());
 

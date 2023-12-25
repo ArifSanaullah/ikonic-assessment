@@ -18,6 +18,17 @@ const Home = () => {
     redirect("api/auth/signin");
   }
 
+  const sendNoti = () => {
+    if ("Notification" in window && Notification.permission === "granted") {
+      // console.log(
+      //   "🚀 ~ file: page.jsx:38 ~ sendNoti ~ otification.permission:",
+      //   Notification.permission
+      // );
+      // console.log("Granted");
+      new Notification("Test", { body: "This is body" });
+    }
+  };
+
   if (isLoading) {
     return <p>Loading...!!!</p>;
   }
@@ -26,6 +37,7 @@ const Home = () => {
     return (
       <div className="grid grid-cols-4 gap-4 p-4 max-h-full h-[calc(100vh_-_64px)] border">
         <div className="col-span-1 flex flex-col gap-2">
+          <button onClick={sendNoti}>Send noti</button>
           <h1>Available rooms</h1>
           {data.map((room) => (
             <RoomItem room={room} key={room._id} />
